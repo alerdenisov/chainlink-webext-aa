@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
 import { WindowPostMessageStream } from '@metamask/post-message-stream'
-// import { createRoot } from 'react-dom/client'
-import { onMessage } from 'webext-bridge/content-script'
-
-// import { App } from './views/App'
 import '@unocss/reset/tailwind.css'
 import 'uno.css'
 
@@ -34,27 +30,28 @@ export default (() => {
 ;(() => {
   console.info('[webext-template] Hello world from content script')
 
-  // communication example: send previous tab title from background page
-  onMessage('tab-prev', ({ data }) => {
-    console.log(`[webext-template] Navigate from page "${data?.title}"`)
-  })
+  {
+    const container = document.head || document.documentElement
+    const scriptEl = document.createElement('script')
+    scriptEl.setAttribute('src', browser.runtime.getURL('dist/contentScripts/sdk.global.js'))
+    container.insertBefore(scriptEl, container.children[0])
+  }
 
-  // mount component to context window
-  const container = document.createElement('div')
-  const root = document.createElement('div')
-  container.className = 'webext-template'
-  const styleEl = document.createElement('link')
-  const scriptEl = document.createElement('script')
-  const shadowDOM = container.attachShadow?.({ mode: __DEV__ ? 'open' : 'closed' }) || container
+  setTimeout(() => {
+    // mount component to context window
+    const container = document.createElement('div')
+    const root = document.createElement('div')
+    container.className = 'webext-template'
+    const styleEl = document.createElement('link')
+    const shadowDOM = container.attachShadow?.({ mode: __DEV__ ? 'open' : 'closed' }) || container
 
-  scriptEl.setAttribute('src', browser.runtime.getURL('dist/contentScripts/sdk.global.js'))
-  styleEl.setAttribute('rel', 'stylesheet')
-  styleEl.setAttribute('href', browser.runtime.getURL('dist/contentScripts/style.css'))
+    styleEl.setAttribute('rel', 'stylesheet')
+    styleEl.setAttribute('href', browser.runtime.getURL('dist/contentScripts/style.css'))
 
-  shadowDOM.appendChild(styleEl)
-  shadowDOM.appendChild(root)
-  shadowDOM.appendChild(scriptEl)
-  document.body.appendChild(container)
-  // const $root = createRoot(root)
-  // $root.render(<App />)
+    shadowDOM.appendChild(styleEl)
+    shadowDOM.appendChild(root)
+    document.body.appendChild(container)
+    // const $root = createRoot(root)
+    // $root.render(<App />)
+  }, 100)
 })()
